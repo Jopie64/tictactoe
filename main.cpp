@@ -44,8 +44,9 @@ struct Field
     for(int i = 0; i < 3; ++i)
     {
       {
-	int n = 3 << i;
-	if (v & n == n)
+	int n = 7 << i * 3;
+	cout << "n = " << n << " v = " << v << endl;
+	if ((v & n) == n)
 	  return true;
       }
       {
@@ -88,6 +89,8 @@ int main(int argc, char* argv[])
   char c;
   do
   {
+    if (f.calcWin())
+      cout << "Win!" << endl;
     f.print(cout);
     cin >> c;
     if (c >= '1' && c <= '9')
