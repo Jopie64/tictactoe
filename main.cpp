@@ -45,24 +45,23 @@ struct Field
     {
       {
 	int n = 7 << i * 3;
-	cout << "n = " << n << " v = " << v << endl;
 	if ((v & n) == n)
 	  return true;
       }
       {
 	int n = (1 + 8 + 64) << i;
-	if (v & n == n)
+	if ((v & n) == n)
 	  return true;
       }
     }
     {
       int n = 1 + 16 + 256;
-      if (v & n == n)
+      if ((v & n) == n)
 	return true;
     }
     {
       int n = 4 + 16 + 64;
-      if (v & n == n)
+      if ((v & n) == n)
 	return true;
     }
     return false;
