@@ -21,6 +21,8 @@
 
 using namespace std;
 
+const int WINVAL = 1000000000;
+
 struct Field
 {
   Field():v(0){}
@@ -60,6 +62,11 @@ struct Field
       set(9);
     else
       reset(9);
+  }
+
+  void clear()
+  {
+    v = 0;
   }
 
   bool isWin() const
@@ -122,8 +129,8 @@ private:
 int getScore(Field f, int* bestPos = NULL)
 {
     if (f.isWin())
-      return INT_MAX; //Dont want to win. But other already won. So its good!
-    int score = INT_MIN;
+      return WINVAL; //Dont want to win. But other already won. So its good!
+    int score = -WINVAL;
     for(int pos = 0; pos < 9; ++pos)
     {
       if (f.get(pos))
@@ -131,6 +138,13 @@ int getScore(Field f, int* bestPos = NULL)
       Field nf = f;
       nf.set(pos);
       int newScore = -getScore(nf);
+      // How much further away, how weaker the score.
+      // This causes the AI to delay its doom as long as possible
+      // or to get its victory as quick as possible.
+      if (newScore > 0)
+	newScore -= 1;
+      else if (newScore < 0)
+	newScore += 1;
       if(newScore > score || (bestPos && *bestPos < 0))
       {
 	score = newScore;
@@ -185,7 +199,14 @@ int main(int argc, char* argv[])
       break;
       case 'r':
 	reset = true;
-	break;
+      break;
+      case 'a':
+	if (reset)
+	  f.clear();
+	else
+	  cout << "All what?" << endl;
+	reset = false;
+      break;
     }
   } while(c != 'q' && c != '0');
   return 0;
