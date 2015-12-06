@@ -66,16 +66,24 @@ struct Field
     }
     return false;
   }
-  
-  void print(ostream& os)
+
+  void printrow(ostream& os, int row)
   {
     char c[] = {' ', 'x'};
-    for(int row=0; row<3; ++row)
+    if (row % 2) os << "-+-+-";
+    else
     {
-      if (row != 0)
-	os << "-+-+-" << endl;
-      os
-	<< c[get(0,row)] << '|' << c[get(1,row)] << '|' << c[get(2,row)] << endl;
+      row /= 2;
+      os << c[get(0,row)] << '|' << c[get(1,row)] << '|' << c[get(2,row)];
+    }
+  }
+
+  void print(ostream& os)
+  {
+    for(int row=0; row<5; ++row)
+    {
+      printrow(os, row);
+      os << endl;
     }
   }
 
