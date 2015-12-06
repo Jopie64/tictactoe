@@ -33,10 +33,20 @@ struct Field
   {
     return !!(v & 1 << bit(x,y));
   }
-  
-  void set(char x, char y)
+
+  bool get(int pos) const
   {
-    v |= 1 << bit(x,y);
+    return !!(v & 1 << pos);
+  }
+  
+  void set(int pos)
+  {
+    v |= 1 << pos;
+  }
+
+  void reset(int pos)
+  {
+    v &= ~(1<<pos);
   }
   
   bool calcWin() const
@@ -103,7 +113,7 @@ int main(int argc, char* argv[])
     if (c >= '1' && c <= '9')
     {
       char p = c - '1';
-      f.set(p % 3, p / 3);
+      f.set(p);
     }
   } while(c != 'q' && c != '0');
   return 0;
