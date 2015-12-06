@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <climits>
 
 using namespace std;
 
@@ -42,13 +43,51 @@ struct Field
   void set(int pos)
   {
     v |= 1 << pos;
+    if (pos < 9)
+      setWin();
   }
 
   void reset(int pos)
   {
     v &= ~(1<<pos);
+    if (pos < 9)
+      setWin();
+  }
+
+  void setWin()
+  {
+    if (calcWin())
+      set(9);
+    else
+      reset(9);
+  }
+
+  bool isWin() const
+  {
+    return get(9);
+  }
+
+  void printrow(ostream& os, int row)
+  {
+    char c[] = {' ', 'x'};
+    if (row % 2) os << "-+-+-";
+    else
+    {
+      row /= 2;
+      os << c[get(0,row)] << '|' << c[get(1,row)] << '|' << c[get(2,row)];
+    }
+  }
+
+  void print(ostream& os)
+  {
+    for(int row=0; row<5; ++row)
+    {
+      printrow(os, row);
+      os << endl;
+    }
   }
   
+private:
   bool calcWin() const
   {
     for(int i = 0; i < 3; ++i)
@@ -77,28 +116,37 @@ struct Field
     return false;
   }
 
-  void printrow(ostream& os, int row)
-  {
-    char c[] = {' ', 'x'};
-    if (row % 2) os << "-+-+-";
-    else
-    {
-      row /= 2;
-      os << c[get(0,row)] << '|' << c[get(1,row)] << '|' << c[get(2,row)];
-    }
-  }
-
-  void print(ostream& os)
-  {
-    for(int row=0; row<5; ++row)
-    {
-      printrow(os, row);
-      os << endl;
-    }
-  }
-
   int v;
 };
+
+int getScore(Field f, int* bestPos = NULL)
+{
+    if (f.isWin())
+      return INT_MAX; //Dont want to win. But other already won. So its good!
+    int score = INT_MIN;
+    for(int pos = 0; pos < 9; ++pos)
+    {
+      if (f.get(pos))
+	continue;
+      Field nf = f;
+      nf.set(pos);
+      int newScore = -getScore(nf);
+      if(newScore > score || (bestPos && *bestPos < 0))
+      {
+	score = newScore;
+	if (bestPos)
+	  *bestPos = pos;
+      }
+    }
+    return score;
+}
+
+int getMove(Field f, int& score)
+{
+    int move = -1;
+    score = getScore(f, &move);
+    return move;
+}
 
 int main(int argc, char* argv[])
 {
@@ -107,7 +155,7 @@ int main(int argc, char* argv[])
   bool reset = false;
   do
   {
-    if (f.calcWin())
+    if (f.isWin())
       cout << "Win!" << endl;
     f.print(cout);
     cin >> c;
@@ -123,7 +171,18 @@ int main(int argc, char* argv[])
     else switch(tolower(c))
     {
       case 't':
-	break;
+      {
+	int score = 0;
+	int move = getMove(f, score);
+	if (move < 0)
+	  cout << "Cant move..." << endl;
+	else
+	{
+	  cout << "Move: " << move << " score: " << score << endl;
+	  f.set(move);
+	}
+      }
+      break;
       case 'r':
 	reset = true;
 	break;
