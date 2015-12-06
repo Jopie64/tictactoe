@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 {
   Field f;
   char c;
+  bool reset = false;
   do
   {
     if (f.calcWin())
@@ -113,7 +114,19 @@ int main(int argc, char* argv[])
     if (c >= '1' && c <= '9')
     {
       char p = c - '1';
-      f.set(p);
+      if (reset)
+	f.reset(p);
+      else
+	f.set(p);
+      reset = false;
+    }
+    else switch(tolower(c))
+    {
+      case 't':
+	break;
+      case 'r':
+	reset = true;
+	break;
     }
   } while(c != 'q' && c != '0');
   return 0;
