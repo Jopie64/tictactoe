@@ -129,10 +129,15 @@ private:
 class BigField
 {
 public:
-  void set(int field, int pos)
+  bool set(int field, int pos)
   {
-    v[field].set(pos);
+    Field& f = v[field];
+    if (f.isWin() || f.get(pos))
+      return false;
+    f.set(pos);
+    return true;
   }
+
   void reset(int field, int pos)
   {
     v[field].reset(pos);
@@ -233,7 +238,8 @@ int main(int argc, char* argv[])
       if (reset)
 	f.reset(fieldIx, p);
       else
-	f.set(fieldIx, p);
+	if (!f.set(fieldIx, p))
+	  cout << "Can't do that right now..." << endl;
       reset = false;
     }
     else switch(tolower(c))
