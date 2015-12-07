@@ -129,6 +129,17 @@ private:
 class BigField
 {
 public:
+  bool isSetAllowed(int pos) const
+  {
+    return isSetAllowed(pos/9, pos%9);
+  }
+
+  bool isSetAllowed(int field, int pos) const
+  {
+    const Field& f = v[field];
+    return !f.isWin() && !f.get(pos);
+  }
+
   bool set(int field, int pos)
   {
     Field& f = v[field];
@@ -136,6 +147,11 @@ public:
       return false;
     f.set(pos);
     return true;
+  }
+
+  bool set(int pos)
+  {
+    return set(pos/9, pos%9);
   }
 
   void reset(int field, int pos)
@@ -210,9 +226,42 @@ int getMove(Field f, int& score)
     return move;
 }
 
+
+int getScore(const BigField& f, int* bestPos = NULL)
+{
+    if (f.isWin())
+      return WINVAL; //Dont want to win. But other already won. So its good!
+    int score = -WINVAL;
+    BigField nf;
+    for(int pos = 0; pos < 27; ++pos)
+    {
+      if (!f.isSetAllowed(pos))
+	continue;
+      nf = f;
+      nf.set(pos);
+      int newScore = -getScore(nf);
+      // How much further away, how weaker the score.
+      // This causes the AI to delay its doom as long as possible
+      // or to get its victory as quick as possible.
+      if (newScore > 0)
+	newScore -= 1;
+      else if (newScore < 0)
+	newScore += 1;
+      if(newScore > score || (bestPos && *bestPos < 0))
+      {
+	score = newScore;
+	if (bestPos)
+	  *bestPos = pos;
+      }
+    }
+    return score;
+}
+
 int getMove(BigField f, int& score)
 {
-  return -1; //Not implemented yet
+    int move = -1;
+    score = getScore(f, &move);
+    return move;
 }
 
 int main(int argc, char* argv[])
@@ -253,7 +302,7 @@ int main(int argc, char* argv[])
 	else
 	{
 	  cout << "Move: " << move << " score: " << score << endl;
-	  //f.set(move);
+	  f.set(move);
 	}
       }
       break;
