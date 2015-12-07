@@ -126,6 +126,49 @@ private:
   int v;
 };
 
+class BigField
+{
+public:
+  void set(int field, int pos)
+  {
+    v[field].set(pos);
+  }
+  void reset(int field, int pos)
+  {
+    v[field].reset(pos);
+  }
+
+  void print(ostream& os)
+  {
+    for(int row=0; row<5; ++row)
+    {
+      for(int field = 0; field < 3; ++field)
+      {
+	if (field != 0)
+	  os << " ";
+	v[field].printrow(os, row);
+      }
+      os << endl;
+    }
+  }
+
+  bool isWin() const
+  {
+    for(auto i : v)
+      if(!i.isWin())
+	return false;
+    return true;
+  }
+
+  void clear()
+  {
+    for(auto& i : v)
+      i.clear();
+  }
+
+  Field v[3];
+};
+
 int getScore(Field f, int* bestPos = NULL)
 {
     if (f.isWin())
@@ -162,9 +205,14 @@ int getMove(Field f, int& score)
     return move;
 }
 
+int getMove(BigField f, int& score)
+{
+  return -1; //Not implemented yet
+}
+
 int main(int argc, char* argv[])
 {
-  Field f;
+  BigField f;
   char c;
   bool reset = false;
   do
@@ -173,13 +221,19 @@ int main(int argc, char* argv[])
       cout << "Win!" << endl;
     f.print(cout);
     cin >> c;
+    int fieldIx = -1;
+    if (c >= 'a' && c <= 'c')
+    {
+      fieldIx = c - 'a';
+      cin >> c;
+    }
     if (c >= '1' && c <= '9')
     {
       char p = c - '1';
       if (reset)
-	f.reset(p);
+	f.reset(fieldIx, p);
       else
-	f.set(p);
+	f.set(fieldIx, p);
       reset = false;
     }
     else switch(tolower(c))
@@ -193,7 +247,7 @@ int main(int argc, char* argv[])
 	else
 	{
 	  cout << "Move: " << move << " score: " << score << endl;
-	  f.set(move);
+	  //f.set(move);
 	}
       }
       break;
