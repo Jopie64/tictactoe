@@ -159,6 +159,11 @@ public:
     v[field].reset(pos);
   }
 
+  void reset(int pos)
+  {
+    reset(pos/9, pos%9);
+  }
+
   void print(ostream& os)
   {
     for(int row=0; row<5; ++row)
@@ -190,7 +195,7 @@ public:
   Field v[3];
 };
 
-int getScore(Field f, int* bestPos = NULL)
+int getScore(Field f, int a, int b, int* bestPos = NULL)
 {
     if (f.isWin())
       return WINVAL; //Dont want to win. But other already won. So its good!
@@ -201,7 +206,7 @@ int getScore(Field f, int* bestPos = NULL)
 	continue;
       Field nf = f;
       nf.set(pos);
-      int newScore = -getScore(nf);
+      int newScore = -getScore(nf, -b, -a);
       // How much further away, how weaker the score.
       // This causes the AI to delay its doom as long as possible
       // or to get its victory as quick as possible.
@@ -209,6 +214,10 @@ int getScore(Field f, int* bestPos = NULL)
 	newScore -= 1;
       else if (newScore < 0)
 	newScore += 1;
+      if (newScore > a)
+	a = newScore;
+      if (a >= b)
+	return a; //Beta cutoff
       if(newScore > score || (bestPos && *bestPos < 0))
       {
 	score = newScore;
@@ -222,24 +231,23 @@ int getScore(Field f, int* bestPos = NULL)
 int getMove(Field f, int& score)
 {
     int move = -1;
-    score = getScore(f, &move);
+    score = getScore(f, -WINVAL, WINVAL, &move);
     return move;
 }
 
 
-int getScore(const BigField& f, int* bestPos = NULL)
+int getScore(const BigField& f, int a, int b, int* bestPos = NULL)
 {
     if (f.isWin())
       return WINVAL; //Dont want to win. But other already won. So its good!
     int score = -WINVAL;
-    BigField nf;
+    BigField nf = f;
     for(int pos = 0; pos < 27; ++pos)
     {
       if (!f.isSetAllowed(pos))
 	continue;
-      nf = f;
       nf.set(pos);
-      int newScore = -getScore(nf);
+      int newScore = -getScore(nf,-b,-a);
       // How much further away, how weaker the score.
       // This causes the AI to delay its doom as long as possible
       // or to get its victory as quick as possible.
@@ -247,12 +255,17 @@ int getScore(const BigField& f, int* bestPos = NULL)
 	newScore -= 1;
       else if (newScore < 0)
 	newScore += 1;
+      if (newScore > a)
+	a = newScore;
+      if (a >= b)
+	return a; //Beta cutoff
       if(newScore > score || (bestPos && *bestPos < 0))
       {
 	score = newScore;
 	if (bestPos)
 	  *bestPos = pos;
       }
+      nf.reset(pos);
     }
     return score;
 }
@@ -260,7 +273,7 @@ int getScore(const BigField& f, int* bestPos = NULL)
 int getMove(BigField f, int& score)
 {
     int move = -1;
-    score = getScore(f, &move);
+    score = getScore(f, -WINVAL, WINVAL, &move);
     return move;
 }
 
